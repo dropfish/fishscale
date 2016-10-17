@@ -2,7 +2,7 @@ Installation:
 
 Clone the GitHub repository:
 
-```$ git clone <repository link here>```
+```$ git clone https://github.com/dropfish/fishscale.git```
 
 Install the Node modules:
 
