@@ -16,6 +16,20 @@ Start the server (it automatically restarts when changes are made):
 
 ```(env) $ nodemon server.js```
 
+To recompile static resources automatically:
+
+```(env) $ npm run dev```
+
+To minify static resources (for production):
+
+```(env) $ npm run build```
+
 Deactivate the environment:
 
 ```(env) $ deactivate_node```
+
+---
+
+Tutorials used:
+- https://www.codementor.io/tamizhvendan/beginner-guide-setup-reactjs-environment-npm-babel-6-webpack-du107r9zr
+
