@@ -11,9 +11,13 @@ var app = express();
 // http://stackoverflow.com/questions/27464168
 app.use('/scripts', express.static(__dirname + '/node_modules/react/dist/'));
 app.use('/scripts', express.static(__dirname + '/node_modules/react-dom/dist/'));
+app.use('/scripts', express.static(__dirname + '/node_modules/underscore/'));
+app.use('/scripts', express.static(__dirname + '/node_modules/axios/dist/'));
 app.use('/scripts', express.static(__dirname + '/dist/'));
 
 
+app.set('views', './src/templates');
+app.set('view engine', 'pug');
 
 
 // First you need to create a connection to the db
@@ -34,7 +38,33 @@ app.use('/scripts', express.static(__dirname + '/dist/'));
 // });
 
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname + '/src/templates/index.html'));
+    console.log("index hit");
+    res.render('index', {title: 'FISHscale'});
+});
+
+app.get('/search_flights', function(req, res) {
+    console.log(req.query);
+
+    let market = "US",
+        currency = "USD",
+        locale = "en-US",
+        originPlace = req.query.originPlace,
+        destinationPlace = req.query.destinationPlace,
+        outboundPartialDate = req.query.outboundPartialDate,
+        inboundPartialDate = req.query.inboundPartialDate,
+        apiKey = "ju754158162474215655445986931695";
+
+    let url = `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${market}/${currency}/${locale}/${originPlace}/${destinationPlace}/${outboundPartialDate}/${inboundPartialDate}?apiKey=${apiKey}`
+
+    request(url, function (error, response, body) {
+        console.log(error);
+        if (!error && response.statusCode == 200) {
+            console.log("got body, sending to client...");
+            res.send({status: 'success!'});
+        }
+
+        // log_data(body);
+    });
 });
 
 app.get('/log_data', function (req, res) {
