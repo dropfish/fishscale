@@ -3,6 +3,7 @@ var fs = require("fs");
 var express = require('express');
 var request = require('request');
 var path = require('path');
+var querystring = require('querystring');
 
 var app = express();
 // This allows the `nodemon` command to be run from anywhere without breaking
@@ -52,19 +53,68 @@ app.get('/search_flights', function(req, res) {
         destinationPlace = req.query.destinationPlace,
         outboundPartialDate = req.query.outboundPartialDate,
         inboundPartialDate = req.query.inboundPartialDate,
-        apiKey = "ju754158162474215655445986931695";
+        apiKey = "prtl6749387986743898559646983194";
 
-    let url = `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${market}/${currency}/${locale}/${originPlace}/${destinationPlace}/${outboundPartialDate}/${inboundPartialDate}?apiKey=${apiKey}`
+    let url = `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/
+        ${market}/
+        ${currency}/
+        ${locale}/
+        ${originPlace}/
+        ${destinationPlace}/
+        ${outboundPartialDate}/
+        ${inboundPartialDate}?apiKey=${apiKey}`
 
-    request(url, function (error, response, body) {
+    url = 'http://partners.api.skyscanner.net/apiservices/pricing/v1.0' + querystring.stringify({
+        country: 'UK',
+        currency: 'GBP',
+        locale: 'en-GB',
+        locationSchema: 'iata',
+        originplace: 'EDI',
+        destinationplace: 'LHR',
+        outbounddate: '2017-05-30',
+        inbounddate: '2017-06-02',
+        adults: 1,
+        children: 0,
+        infants: 0,
+        apikey: apiKey,
+    });
+    console.log(url);
+
+    const options = {
+        url: 'http://partners.api.skyscanner.net/apiservices/pricing/v1.0',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Forwarded-For': req.connection.remoteAddress,
+            'Accept': 'application/json',
+        },
+        form: {
+            country: 'UK',
+            currency: 'GBP',
+            locale: 'en-GB',
+            locationSchema: 'iata',
+            originplace: 'EDI',
+            destinationplace: 'LHR',
+            outbounddate: '2017-05-30',
+            inbounddate: '2017-06-02',
+            adults: 1,
+            children: 0,
+            infants: 0,
+            apikey: apiKey,
+        },
+    };
+
+    function callback(error, response, body) {
         console.log(error);
+        console.log(response);
         if (!error && response.statusCode == 200) {
             console.log("got body, sending to client...");
             res.send({status: 'success!'});
+        } else {
+            res.send({status: 'error!'});
         }
+    }
 
-        // log_data(body);
-    });
+    request.post(options, callback);
 });
 
 app.get('/log_data', function (req, res) {
