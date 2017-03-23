@@ -4,6 +4,7 @@
   "dependencies": {
     "@types/react": "^15.0.16",
     "@types/react-dom": "^0.14.23",
+    "@types/request": "0.0.41",
     "@types/underscore": "^1.8.0",
     "axios": "^0.15.3",
     "babel-core": "^6.24.0",
@@ -13,11 +14,13 @@
     "express": "^4.15.2",
     "mysql": "^2.11.1",
     "nodemon": "^1.10.2",
+    "pubnub": "^4.5.0",
     "pug": "^2.0.0-beta11",
     "querystring": "^0.2.0",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "request": "^2.75.0",
+    "ts-node": "^3.0.2",
     "underscore": "^1.8.3",
     "webpack": "^2.2.1"
   },
@@ -26,6 +29,7 @@
     "build": "webpack -p"
   },
   "devDependencies": {
+    "@types/node": "^7.0.10",
     "awesome-typescript-loader": "^3.1.2",
     "source-map-loader": "^0.2.0",
     "typescript": "^2.2.1"

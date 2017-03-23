@@ -1,9 +1,15 @@
+// Allows us to import TS files.
+require("ts-node").register();
+
 var mysql = require("mysql");
 var fs = require("fs");
 var express = require('express');
 var request = require('request');
 var path = require('path');
 var querystring = require('querystring');
+
+var helpers = require('./src/server/helpers');
+var secrets = require('./src/server/secrets');
 
 var app = express();
 // This allows the `nodemon` command to be run from anywhere without breaking
@@ -14,6 +20,7 @@ app.use('/scripts', express.static(__dirname + '/node_modules/react/dist/'));
 app.use('/scripts', express.static(__dirname + '/node_modules/react-dom/dist/'));
 app.use('/scripts', express.static(__dirname + '/node_modules/underscore/'));
 app.use('/scripts', express.static(__dirname + '/node_modules/axios/dist/'));
+app.use('/scripts', express.static(__dirname + '/node_modules/pubnub/dist/web'));
 app.use('/scripts', express.static(__dirname + '/dist/'));
 
 
@@ -43,28 +50,8 @@ app.get('/', function(req, res) {
     res.render('index', {title: 'FISHscale'});
 });
 
-app.get('/search_flights', function(req, res) {
-    console.log(req.query);
-
-    let market = "US",
-        currency = "USD",
-        locale = "en-US",
-        originPlace = req.query.originPlace,
-        destinationPlace = req.query.destinationPlace,
-        outboundPartialDate = req.query.outboundPartialDate,
-        inboundPartialDate = req.query.inboundPartialDate,
-        apiKey = "prtl6749387986743898559646983194";
-
-    let url = `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/
-        ${market}/
-        ${currency}/
-        ${locale}/
-        ${originPlace}/
-        ${destinationPlace}/
-        ${outboundPartialDate}/
-        ${inboundPartialDate}?apiKey=${apiKey}`
-
-    url = 'http://partners.api.skyscanner.net/apiservices/pricing/v1.0' + querystring.stringify({
+app.get('/create_session', function(req, res) {
+    const url = 'http://partners.api.skyscanner.net/apiservices/pricing/v1.0' + querystring.stringify({
         country: 'UK',
         currency: 'GBP',
         locale: 'en-GB',
@@ -76,9 +63,8 @@ app.get('/search_flights', function(req, res) {
         adults: 1,
         children: 0,
         infants: 0,
-        apikey: apiKey,
+        apikey: secrets.SKYSCANNER_FAKE_API_KEY,
     });
-    console.log(url);
 
     const options = {
         url: 'http://partners.api.skyscanner.net/apiservices/pricing/v1.0',
@@ -99,18 +85,35 @@ app.get('/search_flights', function(req, res) {
             adults: 1,
             children: 0,
             infants: 0,
-            apikey: apiKey,
+            apikey: secrets.SKYSCANNER_FAKE_API_KEY,
         },
     };
+    console.log(url);
 
     function callback(error, response, body) {
-        console.log(error);
-        console.log(response);
-        if (!error && response.statusCode == 200) {
+        console.log("statusCode: ", response.statusCode);
+        if (error) {
+            console.log('error', error);
+            res.send({
+                status: 'ERROR',
+            });
+        } else if (response.statusCode == 201) {
             console.log("got body, sending to client...");
-            res.send({status: 'success!'});
+            const location = response.headers['location'];
+
+            // This is a horrible naming scheme, but all we really care about is that this is unique.
+            const pnChannel = Date.now();
+            res.send({
+                status: 'OK',
+                pnChannel: pnChannel,
+            });
+            helpers.pollLiveFlightData(location, pnChannel);
         } else {
-            res.send({status: 'error!'});
+            console.log('other status: ', response.statusCode);
+            console.log(body);
+            res.send({
+                status: 'ERROR',
+            });
         }
     }
 
@@ -149,7 +152,7 @@ app.get('/log_data', function (req, res) {
 
         // log_data(body);
     });
-    
+
 
 })
 
@@ -208,3 +211,5 @@ var server = app.listen(8081, 'localhost', function () {
 
     console.log("Example app listening at http://%s:%s", host, port)
 });
+
+

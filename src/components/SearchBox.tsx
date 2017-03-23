@@ -6,7 +6,9 @@ import axios, {
     AxiosPromise, AxiosResponse
 } from 'axios';
 
-export interface SearchBoxProps {}
+export interface SearchBoxProps {
+    onSearchSubmit: (pnChannel: string) => void;
+}
 
 export interface SearchBoxState {
     originPlace: string;
@@ -78,21 +80,24 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     }
 
     onSearchClick = (event: React.SyntheticEvent<HTMLButtonElement>) => {
-        console.log('clicked!');
-        
-        axios.get('/search_flights', {
+        // TODO(dfish): Do basic error-checking before submitting.
+
+        axios.get('/create_session', {
             params: {
                 originPlace: this.state.originPlace,
                 destinationPlace: this.state.destinationPlace,
                 outboundPartialDate: this.state.outboundPartialDate,
                 inboundPartialDate: this.state.inboundPartialDate,
             }
-        }).then(
-            function(response: AxiosResponse) {
-                console.log(response);
+        }).then((response: AxiosResponse) => {
+                console.log(response.data);
+                if (response.data.status === 'OK') {
+                    this.props.onSearchSubmit(response.data.pnChannel);
+                } else {
+                    console.log("Failed to create session");
+                }
             }
-        ).catch(
-            function(error: AxiosError) {
+        ).catch((error: AxiosError) => {
                 console.log(error);
             }
         );
