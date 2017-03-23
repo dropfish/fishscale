@@ -25,6 +25,7 @@ export class SearchContainer extends React.Component<SearchContainerProps, Searc
     }
 
     initializeSearchResults = (pnChannel: string) => {
+        console.log('initializeSearchResults', pnChannel);
         this.setState(_.extend(this.state, { pnChannel: pnChannel }));
     }
 

@@ -18,11 +18,17 @@ const pubnub = new PubNub({
     subscribeKey: PUBNUB_SUB_KEY,
 });
 
+const MAX_RETRIES_FOR_INITIAL_DATA = 3;
+const MAX_POLLS_FOR_ALL_RESULTS = 10;
+
 /**
  * Poll Skyscanner for live flight prices and publish the flight data to the PubNub channel
  * that the client is subscribed to.
  */
-export function pollLiveFlightData(location: string, pnChannel: string) {
+export function pollLiveFlightData(
+        location: string,
+        pnChannel: string,
+        callCount?: number) {
     const options = {
         url: location + '?' + querystring.stringify({
             apiKey: SKYSCANNER_FAKE_API_KEY
@@ -32,6 +38,15 @@ export function pollLiveFlightData(location: string, pnChannel: string) {
         },
     };
 
+    function pollAgain() {
+        if (callCount === undefined) {
+            callCount = 0;
+        }
+
+        // TODO(dfish): Verify the client is still alive via PubNub presence occupancy.
+        pollLiveFlightData(location, pnChannel, callCount + 1);
+    }
+
     function callback(error: string, response: RequestResponse, body: any) {
         console.log("got response from pollLiveFlightData");
         if (error) {
@@ -39,20 +54,28 @@ export function pollLiveFlightData(location: string, pnChannel: string) {
             return;
         }
 
-        // TODO(dfish): Repeatedly poll.
-        // TODO(dfish): Only poll while the occupany of the channel > 1.
-        // TODO(dfish): Only poll while there is more data to be had.
-
-        console.log('body', body);
-        console.log('response', response);
+        // TODO(dfish): This is a temporary check. Eventually we may want to handle this differently.
+        if (body.length === 0 || body.Itineraries === undefined) {
+            // If the body is empty, the session has been created but there's no data yet.
+            // Skyscanner recommends waiting a second before proceeding, so that's what
+            // we'll do.
+            if (callCount > MAX_RETRIES_FOR_INITIAL_DATA) {
+                console.log(`Tried to fetch data ${MAX_RETRIES_FOR_INITIAL_DATA} times, giving up.`);
+            } else {
+                setTimeout(pollAgain, 1000);
+                return;
+            }
+        }
+        console.log('length of body', body.length);
 
         // Schema available at https://skyscanner.github.io/slate/#polling-the-results
         const results = JSON.parse(body);
+        const testResults = results.Itineraries.slice(0, 1);
 
-        console.log('itineraries', results.Itineraries.slice(100));
+        console.log('itineraries', testResults);
         pubnub.publish({
             message: {
-                flightData: results.Itineraries.slice(100),
+                flightData: testResults,
             },
             channel: pnChannel,
         }, function (status: any, response: any) {
@@ -69,7 +92,12 @@ export function pollLiveFlightData(location: string, pnChannel: string) {
         // Note: This hasn't been tested sessions requiring multiple poll requests.
         console.log(body.status);
         if (body.status === "UpdatesPending") {
-            setTimeout(pollLiveFlightData, 1000);
+            if (callCount > MAX_POLLS_FOR_ALL_RESULTS) {
+                console.log(`Tried to fetch data ${MAX_POLLS_FOR_ALL_RESULTS} times, giving up.`);
+            } else {
+                setTimeout(pollAgain, 1000);
+                return;
+            }
         } else {
             // TODO(dfish): Tell the client to unsubscribe?
             console.log("Done polling results");

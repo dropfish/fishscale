@@ -18,37 +18,34 @@ export class SearchResults extends React.Component<SearchResultsProps, SearchRes
         const pubnub = new PubNub({
             subscribeKey: 'sub-c-d4324024-0f6a-11e7-8d31-0619f8945a4f'
         });
-
-        this.state = {
-            pubnub: pubnub,
-            itineraries: [],
-        }
-    }
-
-    componentDidMount() {
-        if (this.props.pnChannel === '') {
-            return;
-        }
-
-        this.state.pubnub.addListener({
+        pubnub.addListener({
             message: (message: any) => {
                 console.log("New Message!!", message);
                 this.setState(_.extend(this.state, {itineraries: message}));
             },
         });
 
-        console.log("subscribing to ", this.props.pnChannel);
-        this.state.pubnub.unsubscribeAll();
-        this.state.pubnub.subscribe({
-            channels: [this.props.pnChannel],
-        });
+        this.state = {
+            itineraries: [],
+            pubnub: pubnub,
+        }
     }
 
     render() {
+        // TODO(dfish): It's unperformant to do this every time we render, so we should
+        // make a subcomponent that's only responsible for displaying the results. (Or not
+        // use PubNub.)
+        if (this.props.pnChannel !== '') {
+            this.state.pubnub.unsubscribeAll();
+            this.state.pubnub.subscribe({
+                channels: [this.props.pnChannel],
+            });
+        }
+
         // TODO(dfish): Hide this if itineraries is empty.
         return (
             <div>
-                {this.state.itineraries}
+                {JSON.stringify(this.state.itineraries)}
             </div>
         );
     }

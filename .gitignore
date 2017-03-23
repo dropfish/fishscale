@@ -3,3 +3,5 @@
 .DS_Store
 npm-debug.log
 /src/server/secrets.ts
+/dist/bundle.js
+/src/.DS_Store
