@@ -11,6 +11,11 @@ import {
     SKYSCANNER_API_KEY,
     SKYSCANNER_FAKE_API_KEY,
 } from './secrets';
+import {
+    BookingDetailsLink,
+    Itinerary,
+    PricingOption,
+} from './../skyscanner';
 
 const PubNub = require('pubnub');
 const pubnub = new PubNub({
@@ -47,7 +52,7 @@ export function pollLiveFlightData(
         pollLiveFlightData(location, pnChannel, callCount + 1);
     }
 
-    function callback(error: string, response: RequestResponse, body: any) {
+    function callback(error: string, response: RequestResponse, body: string) {
         console.log("got response from pollLiveFlightData");
         if (error) {
             console.log('error', error);
@@ -55,7 +60,7 @@ export function pollLiveFlightData(
         }
 
         // TODO(dfish): This is a temporary check. Eventually we may want to handle this differently.
-        if (body.length === 0 || body.Itineraries === undefined) {
+        if (body.length === 0) {
             // If the body is empty, the session has been created but there's no data yet.
             // Skyscanner recommends waiting a second before proceeding, so that's what
             // we'll do.
@@ -66,32 +71,16 @@ export function pollLiveFlightData(
                 return;
             }
         }
+        const bodyJSON = JSON.parse(body);
         console.log('length of body', body.length);
 
         // Schema available at https://skyscanner.github.io/slate/#polling-the-results
-        const results = JSON.parse(body);
-        const testResults = results.Itineraries.slice(0, 1);
-
-        console.log('itineraries', testResults);
-        pubnub.publish({
-            message: {
-                flightData: testResults,
-            },
-            channel: pnChannel,
-        }, function (status: any, response: any) {
-                if (status.error) {
-                    // handle error
-                    console.log(status);
-                } else {
-                    console.log("message Published w/ timetoken", response.timetoken);
-                }
-            }
-        );
+        publishFlightResultsToClient(bodyJSON.Itineraries, pnChannel);
 
         // If we haven't received all the data, let's poll again soon.
         // Note: This hasn't been tested sessions requiring multiple poll requests.
-        console.log(body.status);
-        if (body.status === "UpdatesPending") {
+        console.log(bodyJSON.Status);
+        if (bodyJSON.Status === "UpdatesPending") {
             if (callCount > MAX_POLLS_FOR_ALL_RESULTS) {
                 console.log(`Tried to fetch data ${MAX_POLLS_FOR_ALL_RESULTS} times, giving up.`);
             } else {
@@ -105,4 +94,22 @@ export function pollLiveFlightData(
     };
 
     request.get(options, callback);
+}
+
+function publishFlightResultsToClient(itineraries: Array<Itinerary>, pnChannel: string) {
+    console.log('sending this: ', itineraries.slice(0, 1))
+    pubnub.publish({
+        message: {
+            itineraries: itineraries.slice(0, 1),
+        },
+        channel: pnChannel,
+    }, function (status: any, response: any) {
+            if (status.error) {
+                // handle error
+                console.log(status);
+            } else {
+                console.log("message Published w/ timetoken", response.timetoken);
+            }
+        }
+    );
 }
