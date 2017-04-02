@@ -8,8 +8,7 @@ import { RequestResponse } from 'request';
 import {
     PUBNUB_PUB_KEY,
     PUBNUB_SUB_KEY,
-    SKYSCANNER_API_KEY,
-    SKYSCANNER_FAKE_API_KEY,
+    SKYSCANNER_KEY,
 } from './secrets';
 import {
     BookingDetailsLink,
@@ -40,7 +39,7 @@ export function pollLiveFlightData(
         callCount: number = 0): void {
     const options = {
         url: location + '?' + querystring.stringify({
-            apiKey: SKYSCANNER_FAKE_API_KEY
+            apiKey: SKYSCANNER_KEY
         }),
         headers: {
             'Accept': 'application/json',
@@ -174,4 +173,8 @@ function scoreFlights(searchQueryKey: string): void {
  */
 function getSearchQueryKey(pollingQuery: LivePricePollingQuery): string {
     return JSON.stringify(pollingQuery);
+}
+
+function getCachedFlights() {
+
 }

@@ -6,7 +6,12 @@ import axios, {
     AxiosPromise, AxiosResponse
 } from 'axios';
 
+import {
+    BrowseQuoteResponse,
+} from './../skyscanner';
+
 export interface SearchBoxProps {
+    onCachedResultsFetched: (browseResponse: BrowseQuoteResponse) => void
     onSearchSubmit: (pnChannel: string) => void;
 }
 
@@ -79,9 +84,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         this.setState(_.extend(this.state, {inboundPartialDate: event.target.value}));
     }
 
-    onSearchClick = (event: React.SyntheticEvent<HTMLButtonElement>) => {
-        // TODO(dfish): Do basic error-checking before submitting.
-
+    fetchLiveResults = () => {
         axios.get('/create_session', {
             params: {
                 originPlace: this.state.originPlace,
@@ -101,6 +104,33 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
                 console.log(error);
             }
         );
+    }
 
+    fetchCachedResults = () => {
+        axios.get('/browse_flights', {
+            params: {
+                originPlace: this.state.originPlace,
+                destinationPlace: this.state.destinationPlace,
+                outboundPartialDate: this.state.outboundPartialDate,
+                inboundPartialDate: this.state.inboundPartialDate,
+            }
+        }).then((response: AxiosResponse) => {
+                console.log(response.data);
+                if (response.data.status === 'OK') {
+                    this.props.onCachedResultsFetched(response.data.browseResponse);
+                } else {
+                    console.log("Failed to browse flights");
+                }
+            }
+        ).catch((error: AxiosError) => {
+                console.log(error);
+            }
+        );
+    }
+
+    onSearchClick = (event: React.SyntheticEvent<HTMLButtonElement>) => {
+        // TODO(dfish): Do basic error-checking before submitting.
+        this.fetchCachedResults();
     }
 }
+

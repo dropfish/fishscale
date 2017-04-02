@@ -136,3 +136,19 @@ export interface LivePricePollingResponse {
     Places: Array<Place>;
     Currencies: Array<Currency>;
 }
+
+export interface BrowseQuoteResponse {
+    quotes: Array<Quote>;
+    Carriers: Array<Carrier>;
+    Places: Array<Place>;
+    Currencies: Array<Currency>;
+}
+
+export interface Quote {
+    QuoteId: number;
+    MinPrice: number;
+    Direct: boolean;
+    OutboundLeg: Leg;
+    InboundLeg: Leg;
+    QuoteDateTime: string;
+}

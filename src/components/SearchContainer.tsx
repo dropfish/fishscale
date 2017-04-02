@@ -13,6 +13,7 @@ import {
     BookingDetailsLink,
     Itinerary,
     PricingOption,
+    BrowseQuoteResponse,
 } from './../skyscanner';
 
 export interface SearchContainerProps {}
@@ -56,10 +57,16 @@ export class SearchContainer extends React.Component<SearchContainerProps, Searc
         }
     }
 
+    displayFetchedResults = (browseResponse: BrowseQuoteResponse) => {
+        // TODO(dfish): Do something better with the browseResponse.
+        this.setState(_.extend(this.state, { itineraries: browseResponse }));
+    }
+
     render() {
         return (
             <div className="container">
                 <SearchBox
+                    onCachedResultsFetched={this.displayFetchedResults}
                     onSearchSubmit={this.subscribeToChannel}
                 />
                 <SearchResults

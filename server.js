@@ -50,22 +50,40 @@ app.get('/', function(req, res) {
     res.render('index', {title: 'FISHscale'});
 });
 
-app.get('/create_session', function(req, res) {
-    const url = 'http://partners.api.skyscanner.net/apiservices/pricing/v1.0' + querystring.stringify({
-        country: 'UK',
-        currency: 'GBP',
-        locale: 'en-GB',
-        locationSchema: 'iata',
-        originplace: 'EDI',
-        destinationplace: 'LHR',
-        outbounddate: '2017-05-30',
-        inbounddate: '2017-06-02',
-        adults: 1,
-        children: 0,
-        infants: 0,
-        apikey: secrets.SKYSCANNER_FAKE_API_KEY,
-    });
+app.get('/browse_flights', function(req, res) {
+    const country = 'UK',
+        currency = 'GBP',
+        locale = 'en-GB',
+        originPlace = 'EDI',
+        destinationPlace = 'LHR',
+        outboundPartialDate = '2017-05-30',
+        inboundPartialDate = '2017-06-02';
+    const options = {
+        url: `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${country}/${currency}/${locale}/${originPlace}/${destinationPlace}/${outboundPartialDate}/${inboundPartialDate}?` + querystring.stringify({apiKey: secrets.SKYSCANNER_KEY}),
+        headers: {
+            'Accept': 'application/json',
+        },
+    };
 
+    function callback(error, response, body) {
+        if (error) {
+            console.log('error', error);
+            res.send({
+                status: 'ERROR',
+            });
+        } else {
+            console.log(body)
+            res.send({
+                status: 'OK',
+                browseResponse: body,
+            });
+        }
+    }
+
+    request.get(options, callback);
+});
+
+app.get('/create_session', function(req, res) {
     const options = {
         url: 'http://partners.api.skyscanner.net/apiservices/pricing/v1.0',
         headers: {
@@ -85,10 +103,9 @@ app.get('/create_session', function(req, res) {
             adults: 1,
             children: 0,
             infants: 0,
-            apikey: secrets.SKYSCANNER_FAKE_API_KEY,
+            apikey: secrets.SKYSCANNER_KEY,
         },
     };
-    console.log(url);
 
     function callback(error, response, body) {
         console.log("statusCode: ", response.statusCode);
