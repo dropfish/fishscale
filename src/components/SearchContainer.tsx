@@ -19,9 +19,11 @@ import {
 export interface SearchContainerProps {}
 
 export interface SearchContainerState {
-    itineraries:  Array<Itinerary>;
-    pnChannel: string;
+    itineraries?:  Array<Itinerary>;
+    browseResponse?: BrowseQuoteResponse;
+    pnChannel?: string;
     pubnub: any;
+    // TODO(dfish): Add filters
 }
 
 export class SearchContainer extends React.Component<SearchContainerProps, SearchContainerState> {
@@ -40,8 +42,6 @@ export class SearchContainer extends React.Component<SearchContainerProps, Searc
         });
 
         this.state = {
-            itineraries: [],
-            pnChannel: '',
             pubnub: pubnub,
         }
     }
@@ -58,8 +58,7 @@ export class SearchContainer extends React.Component<SearchContainerProps, Searc
     }
 
     displayFetchedResults = (browseResponse: BrowseQuoteResponse) => {
-        // TODO(dfish): Do something better with the browseResponse.
-        this.setState(_.extend(this.state, { itineraries: browseResponse }));
+        this.setState(_.extend(this.state, { browseResponse: browseResponse }));
     }
 
     render() {
@@ -70,6 +69,7 @@ export class SearchContainer extends React.Component<SearchContainerProps, Searc
                     onSearchSubmit={this.subscribeToChannel}
                 />
                 <SearchResults
+                    browseResponse={this.state.browseResponse}
                     itineraries={this.state.itineraries}
                 />
             </div>

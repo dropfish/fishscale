@@ -5,14 +5,20 @@ import {
     BookingDetailsLink,
     Itinerary,
     PricingOption,
+    BrowseQuoteResponse,
+    Quote,
 } from './../skyscanner';
+import {
+    ItineraryRow
+} from './ItineraryRow';
 
 export interface SearchResultsProps {
-    itineraries: Array<Itinerary>;
+    itineraries?: Array<Itinerary>;
+    browseResponse?: BrowseQuoteResponse;
 }
 
 export interface SearchResultsState {
-    // TODO(dfish): Add some filters.
+
 }
 
 export class SearchResults extends React.Component<SearchResultsProps, SearchResultsState> {
@@ -23,14 +29,23 @@ export class SearchResults extends React.Component<SearchResultsProps, SearchRes
     }
 
     render() {
-        console.log('the props: ', this.props);
-        if (this.props.itineraries.length === 0) {
-            return <div></div>;
+        // TODO(dfish): Fix the naming issue between itinerary and quote.
+        let itineraries: Array<JSX.Element> = [];
+        if (this.props.browseResponse !== undefined) {
+            itineraries = this.props.browseResponse.Quotes.map(
+                (quote: Quote, index: number) => {
+                return (
+                    <ItineraryRow
+                        browseResponse={this.props.browseResponse}
+                        itineraryIndex={index}
+                    />
+                );
+            });
         }
 
         return (
             <div>
-                {JSON.stringify(this.props.itineraries)}
+                {itineraries}
             </div>
         );
     }

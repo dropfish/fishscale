@@ -117,7 +117,9 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         }).then((response: AxiosResponse) => {
                 console.log(response.data);
                 if (response.data.status === 'OK') {
-                    this.props.onCachedResultsFetched(response.data.browseResponse);
+                    this.props.onCachedResultsFetched(
+                        JSON.parse(response.data.browseResponse)
+                    );
                 } else {
                     console.log("Failed to browse flights");
                 }

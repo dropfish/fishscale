@@ -27,6 +27,14 @@ export interface Leg {
     FlightNumbers: Array<{ [ index: string ] : string | number }>;
 }
 
+// For some reason, this is different from Leg.
+export interface QuoteLeg {
+    CarrierIds: Array<number>;
+    OriginId: number;
+    DestinationId: number;
+    DepartureDate: string;
+}
+
 export interface Segment {
     Id: number;
     OriginStation: number;
@@ -138,7 +146,7 @@ export interface LivePricePollingResponse {
 }
 
 export interface BrowseQuoteResponse {
-    quotes: Array<Quote>;
+    Quotes: Array<Quote>;
     Carriers: Array<Carrier>;
     Places: Array<Place>;
     Currencies: Array<Currency>;
@@ -148,7 +156,7 @@ export interface Quote {
     QuoteId: number;
     MinPrice: number;
     Direct: boolean;
-    OutboundLeg: Leg;
-    InboundLeg: Leg;
+    OutboundLeg: QuoteLeg;
+    InboundLeg: QuoteLeg;
     QuoteDateTime: string;
 }
