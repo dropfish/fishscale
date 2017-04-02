@@ -25,12 +25,18 @@
     "webpack": "^2.2.1"
   },
   "scripts": {
-    "dev": "webpack -d --watch",
-    "build": "webpack -p"
+    "dev": "concurrently --kill-others \"npm run watch-js\" \"npm run watch-css\" \"nodemon server.js\"",
+    "build": "npm run build-js && npm run build-css",
+    "build-js": "webpack -p",
+    "watch-js": "webpack -d --watch",
+    "build-css": "node-sass --include-path src/scss src/scss/main.scss src/public/css/main.css",
+    "watch-css": "nodemon -e scss -x \"npm run build-css\""
   },
   "devDependencies": {
     "@types/node": "^7.0.10",
     "awesome-typescript-loader": "^3.1.2",
+    "concurrently": "^3.4.0",
+    "node-sass": "^4.5.2",
     "source-map-loader": "^0.2.0",
     "typescript": "^2.2.1"
   }
