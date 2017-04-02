@@ -3,6 +3,6 @@
 .DS_Store
 npm-debug.log
 /src/server/secrets.ts
-/dist/*
+/dist
 /src/.DS_Store
-src/public/css/*
+src/public/css
