@@ -5,4 +5,4 @@ npm-debug.log
 /src/server/secrets.ts
 /dist
 /src/.DS_Store
-src/public/css
+src/public/css/main.css

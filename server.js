@@ -10,6 +10,7 @@ var querystring = require('querystring');
 
 var helpers = require('./src/server/helpers');
 var secrets = require('./src/server/secrets');
+var controllers = require('./src/server/controllers');
 
 var app = express();
 // This allows the `nodemon` command to be run from anywhere without breaking
@@ -22,7 +23,7 @@ app.use('/scripts', express.static(__dirname + '/node_modules/underscore/'));
 app.use('/scripts', express.static(__dirname + '/node_modules/axios/dist/'));
 app.use('/scripts', express.static(__dirname + '/node_modules/pubnub/dist/web'));
 app.use('/scripts', express.static(__dirname + '/dist/'));
-
+app.use('/public', express.static(__dirname + '/src/public/'));
 
 app.set('views', './src/templates');
 app.set('view engine', 'pug');
@@ -51,36 +52,7 @@ app.get('/', function(req, res) {
 });
 
 app.get('/browse_flights', function(req, res) {
-    const country = 'UK',
-        currency = 'GBP',
-        locale = 'en-GB',
-        originPlace = 'EDI',
-        destinationPlace = 'LHR',
-        outboundPartialDate = '2017-05-30',
-        inboundPartialDate = '2017-06-02';
-    const options = {
-        url: `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${country}/${currency}/${locale}/${originPlace}/${destinationPlace}/${outboundPartialDate}/${inboundPartialDate}?` + querystring.stringify({apiKey: secrets.SKYSCANNER_KEY}),
-        headers: {
-            'Accept': 'application/json',
-        },
-    };
-
-    function callback(error, response, body) {
-        if (error) {
-            console.log('error', error);
-            res.send({
-                status: 'ERROR',
-            });
-        } else {
-            console.log(body)
-            res.send({
-                status: 'OK',
-                browseResponse: body,
-            });
-        }
-    }
-
-    request.get(options, callback);
+    controllers.browse_flights(req, res);
 });
 
 app.get('/create_session', function(req, res) {

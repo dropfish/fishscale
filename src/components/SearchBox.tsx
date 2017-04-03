@@ -7,19 +7,32 @@ import axios, {
 } from 'axios';
 
 import {
+    Moment,
+} from 'moment';
+
+import {
     BrowseQuoteResponse,
 } from './../skyscanner';
+import {
+    DateRangePicker,
+} from 'react-dates';
 
 export interface SearchBoxProps {
     onCachedResultsFetched: (browseResponse: BrowseQuoteResponse) => void
     onSearchSubmit: (pnChannel: string) => void;
 }
 
+interface OnDatesChangeArg {
+    startDate?: Moment;
+    endDate?: Moment;
+}
+
 export interface SearchBoxState {
     originPlace: string;
     destinationPlace: string;
-    outboundPartialDate: string;
-    inboundPartialDate: string;
+    outboundPartialDate?: Moment;
+    inboundPartialDate?: Moment;
+    focusedInput?: 'startDate' | 'endDate';
 }
 
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
@@ -28,8 +41,6 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         this.state = {
             originPlace: '',
             destinationPlace: '',
-            outboundPartialDate: '',
-            inboundPartialDate: '',
         }
     }
 
@@ -49,17 +60,12 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
                     value={this.state.destinationPlace}
                     onChange={this.handleDestinationChange}
                 />
-                Depart:
-                <input
-                    type='text'
-                    value={this.state.outboundPartialDate}
-                    onChange={this.handleOutboundDateChange}
-                />
-                Return:
-                <input
-                    type='text'
-                    value={this.state.inboundPartialDate}
-                    onChange={this.handleInboundDateChange}
+                <DateRangePicker
+                    startDate={this.state.outboundPartialDate}
+                    endDate={this.state.inboundPartialDate}
+                    onDatesChange={this.onDatesChange}
+                    focusedInput={this.state.focusedInput}
+                    onFocusChange={this.onFocusChange }
                 />
                 <button type='button' onClick={this.onSearchClick}>
                     Search
@@ -68,20 +74,24 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         )
     }
 
+    onDatesChange = (onDatesChangeArg: OnDatesChangeArg) => {
+        this.setState(_.extend(this.state, {
+            outboundPartialDate: onDatesChangeArg.startDate,
+            inboundPartialDate: onDatesChangeArg.endDate
+        }));
+    };
+
+    onFocusChange = (focusedInput: any) => {
+        console.log(focusedInput);
+        this.setState(_.extend({ focusedInput: focusedInput }));
+    }
+
     handleOriginChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState(_.extend(this.state, {originPlace: event.target.value}));
     }
 
     handleDestinationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState(_.extend(this.state, {destinationPlace: event.target.value}));
-    }
-
-    handleOutboundDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState(_.extend(this.state, {outboundPartialDate: event.target.value}));
-    }
-
-    handleInboundDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState(_.extend(this.state, {inboundPartialDate: event.target.value}));
     }
 
     fetchLiveResults = () => {

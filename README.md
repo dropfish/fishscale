@@ -33,3 +33,4 @@ Deactivate the environment:
 Tutorials used:
 - https://www.codementor.io/tamizhvendan/beginner-guide-setup-reactjs-environment-npm-babel-6-webpack-du107r9zr
 - https://www.kirupa.com/react/setting_up_react_environment.htm
+- https://medium.com/@brianhan/watch-compile-your-sass-with-npm-9ba2b878415b

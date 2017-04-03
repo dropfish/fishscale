@@ -37,10 +37,14 @@ export class ItineraryRow extends React.Component<ItineraryRowProps, ItineraryRo
             return null;
         }
 
-        const outboundDate = new Date(leg.DepartureDate).toString();
+        const outboundDate = new Date(leg.DepartureDate).toLocaleDateString('en-US');
+        const currency = this.props.browseResponse.Currencies[0];
+        const price = currency.Symbol + String(this.state.quote.MinPrice);
         return (
             <div style={{border: "1px solid black"}}>
+                Price: {price}
                 Departs at: {outboundDate}
+
             </div>
         )
     }
