@@ -22,9 +22,14 @@ export interface SearchBoxProps {
     onSearchSubmit: (pnChannel: string) => void;
 }
 
+type FocusedInput = 'startDate'
+    | 'endDate'
+    | null;
+
 interface OnDatesChangeArg {
-    startDate?: Moment;
-    endDate?: Moment;
+    startDate: Moment;
+    endDate: Moment;
+    focusedInput: FocusedInput;
 }
 
 export interface SearchBoxState {
@@ -32,7 +37,7 @@ export interface SearchBoxState {
     destinationPlace: string;
     outboundPartialDate?: Moment;
     inboundPartialDate?: Moment;
-    focusedInput?: 'startDate' | 'endDate';
+    focusedInput: FocusedInput;
 }
 
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
@@ -41,6 +46,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         this.state = {
             originPlace: '',
             destinationPlace: '',
+            focusedInput: null,
         }
     }
 
@@ -65,7 +71,8 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
                     endDate={this.state.inboundPartialDate}
                     onDatesChange={this.onDatesChange}
                     focusedInput={this.state.focusedInput}
-                    onFocusChange={this.onFocusChange }
+                    onFocusChange={this.onFocusChange}
+                    minimumNights={0}
                 />
                 <button type='button' onClick={this.onSearchClick}>
                     Search
@@ -75,14 +82,24 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     }
 
     onDatesChange = (onDatesChangeArg: OnDatesChangeArg) => {
+        let nextFocusedInput: FocusedInput;
+        if (onDatesChangeArg.startDate !== this.state.outboundPartialDate) {
+            // User has just picked a new startDate, so we shift focus to endDate.
+            // Note: The new startDate can actually be the same date as before, but
+            // due to the creation of a new "Moment" object, it gets treated as new.
+            nextFocusedInput = 'endDate';
+        } else {
+            nextFocusedInput = null;
+        }
+
         this.setState(_.extend(this.state, {
             outboundPartialDate: onDatesChangeArg.startDate,
-            inboundPartialDate: onDatesChangeArg.endDate
+            inboundPartialDate: onDatesChangeArg.endDate,
+            focusedInput: nextFocusedInput,
         }));
     };
 
-    onFocusChange = (focusedInput: any) => {
-        console.log(focusedInput);
+    onFocusChange = (focusedInput: FocusedInput) => {
         this.setState(_.extend({ focusedInput: focusedInput }));
     }
 
