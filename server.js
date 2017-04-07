@@ -21,9 +21,10 @@ app.use('/scripts', express.static(__dirname + '/node_modules/react/dist/'));
 app.use('/scripts', express.static(__dirname + '/node_modules/react-dom/dist/'));
 app.use('/scripts', express.static(__dirname + '/node_modules/underscore/'));
 app.use('/scripts', express.static(__dirname + '/node_modules/axios/dist/'));
-app.use('/scripts', express.static(__dirname + '/node_modules/pubnub/dist/web'));
+app.use('/scripts', express.static(__dirname + '/node_modules/pubnub/dist/web/'));
 app.use('/scripts', express.static(__dirname + '/dist/'));
 app.use('/public', express.static(__dirname + '/src/public/'));
+app.use('/public/css', express.static(__dirname + '/node_modules/react-select/dist/'));
 
 app.set('views', './src/templates');
 app.set('view engine', 'pug');

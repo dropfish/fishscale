@@ -5,10 +5,10 @@ import axios, {
     AxiosRequestConfig,
     AxiosPromise, AxiosResponse
 } from 'axios';
-
 import {
     Moment,
 } from 'moment';
+import * as Select from 'react-select';
 
 import {
     BrowseQuoteResponse,
@@ -50,15 +50,42 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         }
     }
 
+
     render() {
         console.log(this.state);
+        console.log(Select);
+        const items = [
+            {
+                name: 'Maine',
+                value: 'maine'
+            },
+            {
+                name: 'Ohio',
+                value: 'ohio'
+            },
+            {
+                name: 'Arkansas',
+                value: 'arkansas'
+            },
+        ];
+
+        var options = [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' }
+        ];
+
+        function logChange(val: any) {
+            console.log("Selected: " + val);
+        }
+
         return (
             <div>
                 From:
-                <input
-                    type='text'
-                    value={this.state.originPlace}
-                    onChange={this.handleOriginChange}
+                <Select
+                    name="form-field-name"
+                    value="one"
+                    options={options}
+                    onChange={logChange}
                 />
                 To:
                 <input
@@ -68,7 +95,9 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
                 />
                 <DateRangePicker
                     startDate={this.state.outboundPartialDate}
+                    startDatePlaceholderText="Departure date"
                     endDate={this.state.inboundPartialDate}
+                    endDatePlaceholderText="Return date"
                     onDatesChange={this.onDatesChange}
                     focusedInput={this.state.focusedInput}
                     onFocusChange={this.onFocusChange}
@@ -80,6 +109,14 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
             </div>
         )
     }
+
+    getItemValue = (item: any) => {
+        return item.value;
+    };
+
+    renderItem = (item: any, isHighlighted: boolean, styles: object) => {
+        return item.name;
+    };
 
     onDatesChange = (onDatesChangeArg: OnDatesChangeArg) => {
         let nextFocusedInput: FocusedInput;
